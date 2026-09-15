@@ -37,7 +37,9 @@ Genera una clave de cifrado de 32 bytes y guárdala de forma segura. La misma cl
 
 ```powershell
 $bytes = New-Object byte[] 32
-[System.Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
+$rng = New-Object System.Security.Cryptography.RNGCryptoServiceProvider
+$rng.GetBytes($bytes)
+$rng.Dispose()
 [Convert]::ToBase64String($bytes)
 ```
 
@@ -63,7 +65,9 @@ Primero crea un archivo `.env` a partir de `.env.example` y asigna una contrase�
 
 ```powershell
 $bytes = New-Object byte[] 32
-[System.Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
+$rng = New-Object System.Security.Cryptography.RNGCryptoServiceProvider
+$rng.GetBytes($bytes)
+$rng.Dispose()
 [Convert]::ToBase64String($bytes)
 ```
 
@@ -84,6 +88,23 @@ docker compose down
 ```
 
 Para eliminar también los datos locales de PostgreSQL, usa `docker compose down -v`.
+
+### Usar una base PostgreSQL ya instalada en Windows
+
+Si ya creaste `tallersemillas` en PostgreSQL de Windows, usa `compose.host-db.yaml`. Esta opción no inicia ni modifica un contenedor PostgreSQL: el backend se conecta a la base local por `host.docker.internal`.
+
+En `.env` configura el usuario y la contraseña que ya usas en PostgreSQL, por ejemplo `DB_USER=postgres`. Después ejecuta:
+
+```powershell
+docker compose -f compose.host-db.yaml up --build -d
+docker compose -f compose.host-db.yaml logs -f backend
+```
+
+Al iniciar, Flyway creará las tablas en la base vacía `tallersemillas`. Para detener solo el backend:
+
+```powershell
+docker compose -f compose.host-db.yaml down
+```
 
 Si quieres crear solo la imagen de la API, sin iniciar la base:
 
