@@ -14,5 +14,22 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+  backend:
+    build:
+      context: .
+    image: backendtallersemillas:local
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/tallersemillas
+      DB_USER: tallersemillas
+      DB_PASSWORD: ${DB_PASSWORD:?Configura DB_PASSWORD}
+      DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:?Configura DATA_ENCRYPTION_KEY}
+      FRONTEND_ORIGINS: ${FRONTEND_ORIGINS:-http://localhost:5173}
+      SESSION_COOKIE_SECURE: "false"
+      SPRING_PROFILES_ACTIVE: local
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
 volumes:
   postgres_data:

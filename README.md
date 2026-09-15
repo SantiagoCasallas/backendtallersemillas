@@ -55,6 +55,55 @@ $env:SPRING_PROFILES_ACTIVE = 'local'
 
 Flyway aplica las migraciones `V1` a `V4` al iniciar. Haz respaldo de la base antes de actualizar una instalación que ya contenga datos. No pierdas ni cambies `DATA_ENCRYPTION_KEY` sin un procedimiento de rotación: los campos protegidos ya guardados no se podrán descifrar con otra clave.
 
+## Ejecutar con Docker
+
+Docker Compose crea dos contenedores en la misma red: `postgres` para la base de datos y `backend` para la API. El backend se conecta a PostgreSQL mediante el nombre interno `postgres`; no uses `localhost` como host de base de datos dentro del contenedor.
+
+Primero crea un archivo `.env` a partir de `.env.example` y asigna una contraseña de PostgreSQL y una clave de cifrado Base64 de 32 bytes. Puedes generarla en PowerShell con:
+
+```powershell
+$bytes = New-Object byte[] 32
+[System.Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
+[Convert]::ToBase64String($bytes)
+```
+
+Después, desde la carpeta del backend:
+
+```powershell
+Copy-Item .env.example .env
+# Edita .env y reemplaza DB_PASSWORD y DATA_ENCRYPTION_KEY.
+docker compose up --build -d
+docker compose ps
+docker compose logs -f backend
+```
+
+La API queda disponible en `http://localhost:8080` y Flyway crea el esquema al arrancar. Para detener los contenedores sin borrar la base:
+
+```powershell
+docker compose down
+```
+
+Para eliminar también los datos locales de PostgreSQL, usa `docker compose down -v`.
+
+Si quieres crear solo la imagen de la API, sin iniciar la base:
+
+```powershell
+docker build -t backendtallersemillas:local .
+```
+
+Esa imagen necesita una instancia PostgreSQL accesible y las variables `DB_URL`, `DB_USER`, `DB_PASSWORD` y `DATA_ENCRYPTION_KEY` para poder ejecutarse.
+
+### Conectar el frontend en Docker
+
+Aunque el servidor web del frontend se ejecuta en un contenedor, su JavaScript se ejecuta en el navegador de Windows. Por eso debe usar `VITE_API_URL=http://localhost:8080/api/v1`. Reconstrúyelo después de iniciar el backend:
+
+```powershell
+cd C:\Users\santi\Documents\GitHub\frontendtallersemillas\proy-semillas
+docker build --build-arg VITE_API_URL=http://localhost:8080/api/v1 -t proysemillas .
+docker rm -f proysemillas
+docker run -d --name proysemillas -p 5173:80 proysemillas
+```
+
 ## Verificar
 
 ```powershell
