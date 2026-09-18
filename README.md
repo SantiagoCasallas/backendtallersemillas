@@ -2,7 +2,7 @@
 
 API REST del Sistema de Gestión Académica (SGA) para el jardín Taller Semillas. Se construyó a partir del frontend existente y de la especificación funcional: página pública, cuentas y roles, entrevistas, aspirantes, preinscripción, matrícula, alumnos y acudientes.
 
-Está implementada con Java 25, Spring Boot 4.1.1, Maven, PostgreSQL, Flyway y Spring Security.
+Está implementada con Java 25, Spring Boot 4.1.1, Maven, PostgreSQL y Spring Security.
 
 ## Estado del proyecto
 
@@ -55,7 +55,7 @@ $env:SPRING_PROFILES_ACTIVE = 'local'
 .\mvnw.cmd -Peclipse-compiler spring-boot:run
 ```
 
-Flyway aplica las migraciones `V1` a `V4` al iniciar. Haz respaldo de la base antes de actualizar una instalación que ya contenga datos. No pierdas ni cambies `DATA_ENCRYPTION_KEY` sin un procedimiento de rotación: los campos protegidos ya guardados no se podrán descifrar con otra clave.
+Antes del primer inicio, ejecuta [`database/supabase-schema.sql`](database/supabase-schema.sql) en el SQL Editor de Supabase. La API valida el esquema al iniciar, pero no lo crea ni lo actualiza automáticamente. Haz respaldo de la base antes de aplicar cambios de esquema. No pierdas ni cambies `DATA_ENCRYPTION_KEY` sin un procedimiento de rotación: los campos protegidos ya guardados no se podrán descifrar con otra clave.
 
 ## Ejecutar con Docker
 
@@ -81,13 +81,26 @@ docker compose ps
 docker compose logs -f backend
 ```
 
-La API queda disponible en `http://localhost:8080` y Flyway crea el esquema al arrancar. Para detener los contenedores sin borrar la base:
+La API queda disponible en `http://localhost:8080`. Antes de iniciarla contra una base nueva, carga el script `database/supabase-schema.sql`. Para detener los contenedores sin borrar la base:
 
 ```powershell
 docker compose down
 ```
 
 Para eliminar también los datos locales de PostgreSQL, usa `docker compose down -v`.
+
+### Usar Supabase
+
+1. En el SQL Editor de tu proyecto Supabase, abre y ejecuta [`database/supabase-schema.sql`](database/supabase-schema.sql) una vez.
+2. Copia `.env.example` a `.env` y configura `DB_URL`, `DB_USER`, `DB_PASSWORD` y `DATA_ENCRYPTION_KEY`. Usa la cadena JDBC de conexión directa que muestra Supabase, con `?sslmode=require`.
+3. Inicia únicamente la API:
+
+```powershell
+docker compose -f compose.supabase.yaml up --build -d
+docker compose -f compose.supabase.yaml logs -f backend
+```
+
+El backend valida el esquema en lugar de crear o migrar tablas. No uses `compose.yaml` y `compose.supabase.yaml` a la vez: ambos publican el puerto `8080`.
 
 ### Usar una base PostgreSQL ya instalada en Windows
 
@@ -100,7 +113,7 @@ docker compose -f compose.host-db.yaml up --build -d
 docker compose -f compose.host-db.yaml logs -f backend
 ```
 
-Al iniciar, Flyway creará las tablas en la base vacía `tallersemillas`. Para detener solo el backend:
+Antes de iniciar, carga `database/supabase-schema.sql` en la base `tallersemillas`. Para detener solo el backend:
 
 ```powershell
 docker compose -f compose.host-db.yaml down

@@ -1,0 +1,15 @@
+services:
+  backend:
+    build:
+      context: .
+    image: backendtallersemillas:local
+    environment:
+      DB_URL: ${DB_URL:?Configura DB_URL con la cadena JDBC de Supabase}
+      DB_USER: ${DB_USER:?Configura DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD:?Configura DB_PASSWORD}
+      DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:?Configura DATA_ENCRYPTION_KEY}
+      FRONTEND_ORIGINS: ${FRONTEND_ORIGINS:-http://localhost:5173}
+      SESSION_COOKIE_SECURE: "false"
+      SPRING_PROFILES_ACTIVE: local
+    ports:
+      - "8080:8080"
