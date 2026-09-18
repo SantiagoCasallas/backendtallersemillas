@@ -163,13 +163,9 @@ El enlace de preinscripción vence a los siete días y queda inutilizable tras s
 
 ## Roles y primer usuario de gestión
 
-Las cuentas públicas se crean con el rol `USUARIO`. Los roles `ADMINISTRADOR` y `DIRECTIVO` pueden usar los módulos de gestión ya implementados. Como los correos están cifrados, asigna inicialmente el rol mediante el identificador que responde el registro, después de verificar la identidad de la persona:
+Las cuentas públicas se crean con el rol `USUARIO`. Para crear la primera cuenta de gestión, ejecuta [`database/create-admin.sql`](database/create-admin.sql) en el SQL Editor de Supabase después de reemplazar sus tres valores `CAMBIA_`. El script genera un hash BCrypt en la base de datos y asigna el rol `ADMINISTRADOR`; no contiene una contraseña predeterminada. Inicia el backend una vez después de ejecutarlo para que cifre el nombre y correo de esa cuenta y calcule su índice de búsqueda.
 
-```sql
-UPDATE accounts SET role = 'ADMINISTRADOR' WHERE id = 'uuid-verificado-de-la-cuenta';
-```
-
-Cierra e inicia sesión después de cambiar el rol. No hay usuarios, contraseñas ni administradores predeterminados.
+Los roles `ADMINISTRADOR` y `DIRECTIVO` pueden usar los módulos de gestión ya implementados. No vuelvas a ejecutar el script para la misma persona: crea una cuenta adicional cada vez.
 
 ## Protección de datos
 
