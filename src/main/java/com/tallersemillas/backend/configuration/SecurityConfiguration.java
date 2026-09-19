@@ -40,6 +40,6 @@ public class SecurityConfiguration {
         cors.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
         cors.setAllowedHeaders(List.of("Content-Type","X-CSRF-TOKEN","Authorization"));
         cors.setAllowCredentials(true);
-        UrlBasedCorsConfigurationSource source=new UrlBasedCorsConfigurationSource(); source.registerCorsConfiguration("/api/**",cors); return source;
+        UrlBasedCorsConfigurationSource source=new UrlBasedCorsConfigurationSource(); source.registerCorsConfiguration("/**",cors); return source;
     }
 }

@@ -59,9 +59,9 @@ Antes del primer inicio, ejecuta [`database/supabase-schema.sql`](database/supab
 
 ## Ejecutar con Docker
 
-Docker Compose crea dos contenedores en la misma red: `postgres` para la base de datos y `backend` para la API. El backend se conecta a PostgreSQL mediante el nombre interno `postgres`; no uses `localhost` como host de base de datos dentro del contenedor.
+Docker Compose inicia el contenedor `backend` de la API y lo conecta a la base de datos de Supabase definida en `.env`. El esquema no se crea ni se migra automáticamente: [`database/supabase-schema.sql`](database/supabase-schema.sql) debe ejecutarse una vez en el SQL Editor de Supabase.
 
-Primero crea un archivo `.env` a partir de `.env.example` y asigna una contraseña de PostgreSQL y una clave de cifrado Base64 de 32 bytes. Puedes generarla en PowerShell con:
+Primero crea un archivo `.env` a partir de `.env.example` y configura `DB_URL`, `DB_USER`, `DB_PASSWORD` y una clave de cifrado Base64 de 32 bytes (`DATA_ENCRYPTION_KEY`). Puedes generarla en PowerShell con:
 
 ```powershell
 $bytes = New-Object byte[] 32
@@ -75,32 +75,19 @@ Después, desde la carpeta del backend:
 
 ```powershell
 Copy-Item .env.example .env
-# Edita .env y reemplaza DB_PASSWORD y DATA_ENCRYPTION_KEY.
+# Edita .env con la cadena JDBC de Supabase (con ?sslmode=require) y DATA_ENCRYPTION_KEY.
 docker compose up --build -d
 docker compose ps
 docker compose logs -f backend
 ```
 
-La API queda disponible en `http://localhost:8080`. Antes de iniciarla contra una base nueva, carga el script `database/supabase-schema.sql`. Para detener los contenedores sin borrar la base:
+La API queda disponible en `http://localhost:8080`. Para detener el contenedor:
 
 ```powershell
 docker compose down
 ```
 
-Para eliminar también los datos locales de PostgreSQL, usa `docker compose down -v`.
-
-### Usar Supabase
-
-1. En el SQL Editor de tu proyecto Supabase, abre y ejecuta [`database/supabase-schema.sql`](database/supabase-schema.sql) una vez.
-2. Copia `.env.example` a `.env` y configura `DB_URL`, `DB_USER`, `DB_PASSWORD` y `DATA_ENCRYPTION_KEY`. Usa la cadena JDBC de conexión directa que muestra Supabase, con `?sslmode=require`.
-3. Inicia únicamente la API:
-
-```powershell
-docker compose -f compose.supabase.yaml up --build -d
-docker compose -f compose.supabase.yaml logs -f backend
-```
-
-El backend valida el esquema en lugar de crear o migrar tablas. No uses `compose.yaml` y `compose.supabase.yaml` a la vez: ambos publican el puerto `8080`.
+`compose.supabase.yaml` es un alias equivalente de `compose.yaml`. El backend valida el esquema en lugar de crear o migrar tablas.
 
 ### Usar una base PostgreSQL ya instalada en Windows
 

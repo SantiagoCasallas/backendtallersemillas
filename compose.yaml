@@ -1,34 +1,15 @@
 services:
-  postgres:
-    image: postgres:17
-    environment:
-      POSTGRES_DB: tallersemillas
-      POSTGRES_USER: tallersemillas
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?Configura DB_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./database/supabase-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tallersemillas -d tallersemillas"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
   backend:
     build:
       context: .
     image: backendtallersemillas:local
     environment:
-      DB_URL: jdbc:postgresql://postgres:5432/tallersemillas
-      DB_USER: tallersemillas
+      DB_URL: ${DB_URL:?Configura DB_URL con la cadena JDBC de Supabase}
+      DB_USER: ${DB_USER:?Configura DB_USER}
       DB_PASSWORD: ${DB_PASSWORD:?Configura DB_PASSWORD}
       DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:?Configura DATA_ENCRYPTION_KEY}
       FRONTEND_ORIGINS: ${FRONTEND_ORIGINS:-http://localhost:5173}
       SESSION_COOKIE_SECURE: "false"
       SPRING_PROFILES_ACTIVE: local
-    depends_on:
-      postgres:
-        condition: service_healthy
     ports:
       - "8080:8080"
-volumes:
-  postgres_data:
